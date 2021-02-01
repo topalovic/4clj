@@ -411,6 +411,32 @@
         i)))))
 
 (problem
+ ;; 70. Write a function that splits a sentence up into a sorted list of words.
+ ;; Capitalization should not affect sort order and punctuation should be ignored.
+
+ (= (__  "Have a nice day.")
+    ["a" "day" "Have" "nice"])
+ (= (__  "Clojure is a fun language!")
+    ["a" "Clojure" "fun" "is" "language"])
+ (= (__  "Fools fall for foolish follies.")
+    ["fall" "follies" "foolish" "Fools" "for"])
+
+ (def solution-70
+   #(sort-by clojure.string/lower-case (clojure.string/split % #"\W"))))
+
+(problem
+ ;; 74. Given a string of comma separated integers, write a function which
+ ;; returns a new comma separated string that only contains the numbers which
+ ;; are perfect squares.
+
+ (= (__ "4,5,6,7,8,9") "4,9")
+ (= (__ "15,16,25,36,37") "16,25,36")
+
+ (def solution-74
+   (fn [s]
+     (clojure.string/join "," (filter #(integer? (rationalize (Math/sqrt (Integer/parseInt %1)))) (clojure.string/split s #","))))))
+
+(problem
  ;; 81. Write a function which returns the intersection of two sets. The
  ;; intersection is the sub-set of items that each set has in common.
 
@@ -434,6 +460,19 @@
  (= true  (__ true true true false))
 
  (def solution-83 not=))
+
+(problem
+ ;; 85. Write a function which generates the power set of a given set.
+
+ (= (__ #{1 :a}) #{#{1 :a} #{:a} #{} #{1}})
+ (= (__ #{}) #{#{}})
+ (= (__ #{1 2 3})
+    #{#{} #{1} #{2} #{3} #{1 2} #{1 3} #{2 3} #{1 2 3}})
+ (= (count (__ (into #{} (range 10)))) 1024)
+
+ (def solution-85
+   (fn [s]
+     (reduce #(into % (for [ss %] (conj ss %2))) #{#{}} s))))
 
 (problem
  ;; 88. Write a function which returns the symmetric difference of two sets. The
