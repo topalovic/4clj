@@ -559,6 +559,22 @@
      (last (take n (iterate #(map + `(0 ~@%) `(~@% 0)) [1]))))))
 
 (problem
+ ;; 98. Write a function with arguments f and D that computes the equivalence
+ ;; classes of D with respect to f.
+
+ (= (__ #(* % %) #{-2 -1 0 1 2})
+    #{#{0} #{1 -1} #{2 -2}})
+ (= (__ #(rem % 3) #{0 1 2 3 4 5 })
+    #{#{0 3} #{1 4} #{2 5}})
+ (= (__ identity #{0 1 2 3 4})
+    #{#{0} #{1} #{2} #{3} #{4}})
+ (= (__ (constantly true) #{0 1 2 3 4})
+    #{#{0 1 2 3 4}})
+
+ (def solution-98
+   #(set (map set (vals (group-by % %2))))))
+
+(problem
  ;; 99. Write a function which multiplies two numbers and returns the result as
  ;; a sequence of its digits.
 
@@ -583,6 +599,24 @@
    (fn [& c]
      (let [gcd (fn [a b] (if (zero? b) a (recur b (mod a b))))]
        (/ (apply * c) (reduce gcd c))))))
+
+(problem
+ ;; 103. Given a sequence S consisting of n elements generate all
+ ;; k-combinations of S, i. e. generate all possible sets consisting of k
+ ;; distinct elements taken from S.
+
+ (= (__ 1 #{4 5 6}) #{#{4} #{5} #{6}})
+ (= (__ 10 #{4 5 6}) #{})
+ (= (__ 2 #{0 1 2}) #{#{0 1} #{0 2} #{1 2}})
+ (= (__ 3 #{0 1 2 3 4}) #{#{0 1 2} #{0 1 3} #{0 1 4} #{0 2 3} #{0 2 4}
+                          #{0 3 4} #{1 2 3} #{1 2 4} #{1 3 4} #{2 3 4}})
+ (= (__ 4 #{[1 2 3] :a "abc" "efg"}) #{#{[1 2 3] :a "abc" "efg"}})
+ (= (__ 2 #{[1 2 3] :a "abc" "efg"}) #{#{[1 2 3] :a} #{[1 2 3] "abc"} #{[1 2 3] "efg"}
+                                       #{:a "abc"} #{:a "efg"} #{"abc" "efg"}})
+
+ (def solution-103
+   (fn [k s]
+     (clojure.set/select #(= k (count %)) (reduce #(into % (for [ss %] (conj ss %2))) #{#{}} s)))))
 
 (problem
  ;; 107. Given a positive integer n, return a function (f x) which computes
@@ -700,6 +734,20 @@
 
  (def solution-143
    #(apply + (map * % %2))))
+
+(problem
+ ;; 144. Write an oscillating iterate: a function that takes an initial value
+ ;; and a variable number of functions. It should return a lazy sequence of the
+ ;; functions applied to the value in order, restarting from the first function
+ ;; after it hits the end.
+
+ (= (take 3 (__ 3.14 int double)) [3.14 3 3.0])
+ (= (take 5 (__ 3 #(- % 3) #(+ 5 %))) [3 0 5 2 7])
+ (= (take 12 (__ 0 inc dec inc dec inc)) [0 1 0 1 0 1 2 1 2 1 2 3])
+
+ (def solution-144
+   (fn [x & fs]
+     (reductions #(%2 %) x (cycle fs)))))
 
 (problem
  ;; 146. Your goal is to "flatten" a map of hashmaps. Each key in your output
