@@ -359,6 +359,76 @@
        (cons (take n c) (p n (drop n c)))))))
 
 (problem
+ ;; 55. Write a function which returns a map containing the number of
+ ;; occurences of each distinct item in a sequence.
+
+ (= (__ [1 1 2 3 2 1 1]) {1 4, 2 2, 3 1})
+ (= (__ [:b :a :b :a :b]) {:a 2, :b 3})
+ (= (__ '([1 2] [1 3] [1 3])) {[1 2] 1, [1 3] 2})
+
+ (def solution-55
+   #(apply merge-with + (for [k %] {k 1}))))
+
+(problem
+ ;; 56. Write a function which removes the duplicates from a sequence.
+ ;; Order of the items must be maintained.
+
+ (= (__ [1 2 1 3 1 2 4]) [1 2 3 4])
+ (= (__ [:a :a :b :b :c :c]) [:a :b :c])
+ (= (__ '([2 4] [1 2] [1 3] [1 3])) '([2 4] [1 2] [1 3]))
+ (= (__ (range 50)) (range 50))
+
+ (def solution-56
+   (fn [c]
+     (reduce #(if ((set %) %2) % (conj % %2)) [] c))))
+
+(problem
+ ;; 58. Write a function which allows you to create function compositions. The
+ ;; parameter list should take a variable number of functions, and create a
+ ;; function that applies them from right-to-left.
+
+ (= [3 2 1] ((__ rest reverse) [1 2 3 4]))
+ (= 5 ((__ (partial + 3) second) [1 2 3 4]))
+ (= true ((__ zero? #(mod % 8) +) 3 5 7 9))
+ (= "HELLO" ((__ #(.toUpperCase %) #(apply str %) take) 5 "hello world"))
+
+ (def solution-58
+   (fn [& fs]
+     (reduce (fn [f g] #(f (apply g %&))) fs))))
+
+(problem
+ ;; 59. Take a set of functions and return a new function that takes a variable
+ ;; number of arguments and returns a sequence containing the result of
+ ;; applying each function left-to-right to the argument list.
+
+ (= [21 6 1] ((__ + max min) 2 3 5 1 6 4))
+ (= ["HELLO" 5] ((__ #(.toUpperCase %) count) "hello"))
+ (= [2 6 4] ((__ :a :c :b) {:a 2, :b 4, :c 6, :d 8 :e 10}))
+
+ (def solution-59
+   (fn [& fs]
+     (fn [& c] (map #(apply % c) fs)))))
+
+(problem
+ ;; 60. Write a function which behaves like reduce, but returns each
+ ;; intermediate value of the reduction. Your function must accept either two
+ ;; or three arguments, and the return sequence must be lazy.
+
+ (= (take 5 (__ + (range))) [0 1 3 6 10])
+ (= (__ conj [1] [2 3 4]) [[1] [1 2] [1 2 3] [1 2 3 4]])
+ (= (last (__ * 2 [3 4 5])) (reduce * 2 [3 4 5]) 120)
+
+ (def solution-60
+   (fn rd
+     ([f c]
+      (rd f (first c) (rest c)))
+     ([f x c]
+      (cons x
+            (lazy-seq
+             (when-let [s (seq c)]
+               (rd f (f x (first s)) (rest s)))))))))
+
+(problem
  ;; 61. Write a function which takes a vector of keys and a vector of values
  ;; and constructs a map from them.
 
