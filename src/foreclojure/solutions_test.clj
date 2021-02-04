@@ -467,6 +467,23 @@
    #(apply merge-with into (for [v %2] {(% v) [v]}))))
 
 (problem
+ ;; 65. Write a function which takes a collection and returns one of :map,
+ ;; :set, :list, or :vector - describing the type of collection it was given.
+
+ (= :map (__ {:a 1, :b 2}))
+ (= :list (__ (range (rand-int 20))))
+ (= :vector (__ [1 2 3 4 5 6]))
+ (= :set (__ #{10 (rand-int 5)}))
+ (= [:map :set :vector :list] (map __ [{} #{} [] ()]))
+
+ (def solution-65
+   #(cond
+      (= (:x (conj % [:x "x"])) "x") :map
+      (= (:x (conj % :x)) :x) :set
+      (= (first (conj % :x :y)) :y) :list
+      (= (last  (conj % :x :y)) :y) :vector)))
+
+(problem
  ;; 66. Given two integers, write a function which returns the greatest common divisor.
 
  (= (__ 2 4) 2)
@@ -479,6 +496,45 @@
      (last
       (for [i (range 1 (max x y)) :when (= 0 (mod x i) (mod y i))]
         i)))))
+
+(problem
+ ;; 67. Write a function which returns the first x number of prime numbers.
+
+ (= (__ 2) [2 3])
+ (= (__ 5) [2 3 5 7 11])
+ (= (last (__ 100)) 541)
+
+ (def solution-67
+   (fn [n]
+     (letfn [(p? [i]
+               (not-any? #(and (not= i %) (= 0 (mod i %)))
+                         (range 2 (inc (Math/sqrt i)))))]
+       (take n (drop 2 (filter p? (range))))))))
+
+(problem
+ ;; 69. Write a function which takes a function f and a variable number of
+ ;; maps. Your function should return a map that consists of the rest of the
+ ;; maps conj-ed onto the first. If a key occurs in more than one map, the
+ ;; mapping(s) from the latter (left-to-right) should be combined with the
+ ;; mapping in the result by calling (f val-in-result val-in-latter).
+
+ (= (__ * {:a 2, :b 3, :c 4} {:a 2} {:b 2} {:c 5})
+    {:a 4, :b 6, :c 20})
+ (= (__ - {1 10, 2 20} {1 3, 2 10, 3 15})
+    {1 7, 2 10, 3 15})
+ (= (__ concat {:a [3], :b [6]} {:a [4 5], :c [8 9]} {:b [7]})
+    {:a [3 4 5], :b [6 7], :c [8 9]})
+
+ (def solution-69
+   (fn [f & ms]
+     (reduce
+      (fn [m1 m2]
+        (reduce
+         (fn [m [k v]]
+           (if (m k)
+             (update m k f v)
+             (assoc m k v)))
+         m1 m2)) ms))))
 
 (problem
  ;; 70. Write a function that splits a sentence up into a sorted list of words.
