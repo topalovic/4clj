@@ -563,6 +563,54 @@
      (clojure.string/join "," (filter #(integer? (rationalize (Math/sqrt (Integer/parseInt %1)))) (clojure.string/split s #","))))))
 
 (problem
+ ;; 76. The trampoline function takes a function f and a variable number of
+ ;; parameters. Trampoline calls f with any parameters that were supplied. If f
+ ;; returns a function, trampoline calls that function with no arguments. This
+ ;; is repeated, until the return value is not a function, and then trampoline
+ ;; returns that non-function value.
+
+ (= __
+    (letfn
+        [(foo [x y] #(bar (conj x y) y))
+         (bar [x y] (if (> (last x) 10)
+                      x
+                      #(foo x (+ 2 y))))]
+      (trampoline foo [] 1)))
+
+ (def solution-76 [1 3 5 7 9 11]))
+
+(problem
+ ;; 78. Reimplement trampoline.
+
+ (= (letfn [(triple [x] #(sub-two (* 3 x)))
+            (sub-two [x] #(stop?(- x 2)))
+            (stop? [x] (if (> x 50) x #(triple x)))]
+      (__ triple 2))
+    82)
+
+ (= (letfn [(my-even? [x] (if (zero? x) true #(my-odd? (dec x))))
+            (my-odd? [x] (if (zero? x) false #(my-even? (dec x))))]
+      (map (partial __ my-even?) (range 6)))
+    [true false true false true false])
+
+ (def solution-78
+   #(loop [f (apply % %&)] (if (fn? f) (recur (f)) f))))
+
+(problem
+ ;; 80. A number is "perfect" if the sum of its divisors equal the number itself.
+ ;; Write a function which returns true for perfect numbers and false otherwise.
+
+ (= (__ 6)    true)
+ (= (__ 7)    false)
+ (= (__ 496)  true)
+ (= (__ 500)  false)
+ (= (__ 8128) true)
+
+ (def solution-80
+   (fn [n]
+     (= n (apply + (filter #(= 0 (mod n %)) (range 1 n)))))))
+
+(problem
  ;; 81. Write a function which returns the intersection of two sets. The
  ;; intersection is the sub-set of items that each set has in common.
 
