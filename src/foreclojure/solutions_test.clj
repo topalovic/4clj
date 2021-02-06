@@ -745,6 +745,20 @@
      (filter #(= % (flatten %)) (tree-seq sequential? seq c)))))
 
 (problem
+ ;; 92. Write a function to parse a Roman-numeral string and return the number it represents.
+
+ (= 14   (__ "XIV"))
+ (= 827  (__ "DCCCXXVII"))
+ (= 3999 (__ "MMMCMXCIX"))
+ (= 48   (__ "XLVIII"))
+
+ (def solution-92
+   (fn [s]
+     (let [m {\I 1 \V 5 \X 10 \L 50 \C 100 \D 500 \M 1000}]
+       (apply +
+              (reduce (fn [a v] (let [n (m v) p (first a)] (conj a (if (> p n) (- n) n)))) '(0) (reverse s)))))))
+
+(problem
  ;; 95. Write a predicate which checks whether or not a given sequence
  ;; represents a binary tree. Each node in the tree must have a value, a left
  ;; child, and a right child.
@@ -886,6 +900,85 @@
  (def solution-107
    (fn [n]
      #(int (Math/pow % n)))))
+
+(problem
+ ;; 108. Given any number of sequences, each sorted from smallest to largest,
+ ;; find the smallest single number which appears in all of the sequences. The
+ ;; sequences may be infinite, so be careful to search lazily.
+
+ (= 3 (__ [3 4 5]))
+ (= 4 (__ [1 2 3 4 5 6 7] [0.5 3/2 4 19]))
+ (= 7 (__ (range) (range 0 100 7/6) [2 3 5 7 11 13]))
+ (= 64 (__ (map #(* % % %) (range)) ;; perfect cubes
+          (filter #(zero? (bit-and % (dec %))) (range)) ;; powers of 2
+          (iterate inc 20))) ;; at least as large as 20
+
+ (def solution-108
+   (fn [& cs]
+     (let [xs (map first cs)
+           x  (apply max xs)]
+       (if (apply = xs)
+         x
+         (recur (map (fn [c] (drop-while #(< % x) c)) cs)))))))
+
+(problem
+ ;; 110. Write a function that returns a lazy sequence of "pronunciations" of a
+ ;; sequence of numbers. A pronunciation of each element in the sequence
+ ;; consists of the number of repeating identical numbers and the number
+ ;; itself. For example, [1 1] is pronounced as [2 1] ("two ones"), which in
+ ;; turn is pronounced as [1 2 1 1] ("one two, one one").
+
+ (= [[1 1] [2 1] [1 2 1 1]] (take 3 (__ [1])))
+ (= [3 1 2 4] (first (__ [1 1 1 4 4])))
+ (= [1 1 1 3 2 1 3 2 1 1] (nth (__ [1]) 6))
+ (= 338 (count (nth (__ [3 2]) 15)))
+
+ (def solution-110
+   (fn [c]
+     (rest (iterate #(mapcat (juxt count first) (partition-by identity %)) c)))))
+
+(problem
+ ;; 114. Write a function which accepts an integer n, a predicate p, and a
+ ;; sequence. It should return a lazy sequence of items in the list up to, but
+ ;; not including, the nth item that satisfies the predicate.
+
+ (= [2 3 5 7 11 13]
+    (__ 4 #(= 2 (mod % 3))
+        [2 3 5 7 11 13 17 19 23]))
+ (= ["this" "is" "a" "sentence"]
+    (__ 3 #(some #{\i} %)
+        ["this" "is" "a" "sentence" "i" "wrote"]))
+ (= ["this" "is"]
+    (__ 1 #{"a"}
+        ["this" "is" "a" "sentence" "i" "wrote"]))
+
+ (def solution-114
+   (fn tw [n p [x & xs]]
+     (when (or (> n 1) (not (p x)))
+       (cons x (tw (if (p x) (dec n) n) p xs))))))
+
+(problem
+ ;; 115. A balanced number is one whose component digits have the same sum on
+ ;; the left and right halves of the number. Write a function which accepts an
+ ;; integer n, and returns true iff n is balanced.
+
+ (= true  (__ 11))
+ (= true  (__ 121))
+ (= false (__ 123))
+ (= true  (__ 0))
+ (= false (__ 88099))
+ (= true  (__ 89098))
+ (= true  (__ 89089))
+ (= (take 20 (filter __ (range)))
+    [0 1 2 3 4 5 6 7 8 9 11 22 33 44 55 66 77 88 99 101])
+
+ (def solution-115
+   (fn [n]
+     (let [ds (map #(Character/digit % 10) (str n))
+           h (int (/ (count ds) 2))
+           l (take h ds)
+           r (take-last h ds)]
+       (= (apply + l) (apply + r))))))
 
 (problem
  ;; 118. Given a function f and an input sequence s, return a lazy sequence
