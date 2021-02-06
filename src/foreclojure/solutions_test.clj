@@ -563,6 +563,22 @@
      (clojure.string/join "," (filter #(integer? (rationalize (Math/sqrt (Integer/parseInt %1)))) (clojure.string/split s #","))))))
 
 (problem
+ ;; 75. Two numbers are coprime if their greatest common divisor equals 1.
+ ;; Euler's totient function f(x) is defined as the number of positive integers
+ ;; less than x which are coprime to x. The special case f(1) equals 1. Write a
+ ;; function which calculates Euler's totient function.
+
+ (= (__ 1) 1)
+ (= (__ 10) (count '(1 3 7 9)) 4)
+ (= (__ 40) 16)
+ (= (__ 99) 60)
+
+ (def solution-75
+   (fn [n]
+     (letfn [(g [x y] (if (zero? y) x (recur y (mod x y))))]
+       (count (filter #{1} (map #(g n %) (range n))))))))
+
+(problem
  ;; 76. The trampoline function takes a function f and a variable number of
  ;; parameters. Trampoline calls f with any parameters that were supplied. If f
  ;; returns a function, trampoline calls that function with no arguments. This
@@ -578,6 +594,23 @@
       (trampoline foo [] 1)))
 
  (def solution-76 [1 3 5 7 9 11]))
+
+(problem
+ ;; 77. Write a function which finds all the anagrams in a vector of words. A
+ ;; word x is an anagram of word y if all the letters in x can be rearranged in
+ ;; a different order to form y. Your function should return a set of sets,
+ ;; where each sub-set is a group of words which are anagrams of each other.
+ ;; Each sub-set should have at least two words. Words without any anagrams
+ ;; should not be included in the result.
+
+ (= (__ ["meat" "mat" "team" "mate" "eat"])
+    #{#{"meat" "team" "mate"}})
+ (= (__ ["veer" "lake" "item" "kale" "mite" "ever"])
+    #{#{"veer" "ever"} #{"lake" "kale"} #{"mite" "item"}})
+
+ (def solution-77
+   (fn [c]
+     (set (map set (filter #(> (count %) 1) (vals (group-by (comp sort seq) c))))))))
 
 (problem
  ;; 78. Reimplement trampoline.
@@ -649,6 +682,25 @@
      (reduce #(into % (for [ss %] (conj ss %2))) #{#{}} s))))
 
 (problem
+ ;; 86. Happy numbers are positive integers that follow a particular formula:
+ ;; take each individual digit, square it, and then sum the squares to get a
+ ;; new number. Repeat with the new number and eventually, you might get to a
+ ;; number whose squared sum is 1. This is a happy number. An unhappy
+ ;; number (or sad number) is one that loops endlessly. Write a function that
+ ;; determines if a number is happy or not.
+
+ (= (__ 7) true)
+ (= (__ 986543210) true)
+ (= (__ 2) false)
+ (= (__ 3) false)
+
+ (def solution-86
+   (fn [n]
+     (letfn [(d [i] (map #(Character/digit % 10) (str i)))
+             (s [i] (reduce + (map #(* % %) (d i))))]
+       (some? (some #{1} (take 99 (iterate s n))))))))
+
+(problem
  ;; 88. Write a function which returns the symmetric difference of two sets. The
  ;; symmetric difference is the set of items belonging to one but not both of
  ;; the two sets.
@@ -675,6 +727,22 @@
 
  (def solution-90
    #(set (for [x % y %2] (vector x y)))))
+
+(problem
+ ;; 93. Write a function which flattens any nested combination of sequential
+ ;; things, but maintains the lowest level sequential items. The result should
+ ;; be a sequence of sequences with only one level of nesting.
+
+ (= (__ [["Do"] ["Nothing"]])
+    [["Do"] ["Nothing"]])
+ (= (__ [[[[:a :b]]] [[:c :d]] [:e :f]])
+    [[:a :b] [:c :d] [:e :f]])
+ (= (__ '((1 2)((3 4)((((5 6)))))))
+    '((1 2)(3 4)(5 6)))
+
+ (def solution-93
+   (fn [c]
+     (filter #(= % (flatten %)) (tree-seq sequential? seq c)))))
 
 (problem
  ;; 95. Write a predicate which checks whether or not a given sequence
@@ -773,6 +841,19 @@
    (fn [& c]
      (let [gcd (fn [a b] (if (zero? b) a (recur b (mod a b))))]
        (/ (apply * c) (reduce gcd c))))))
+
+(problem
+ ;; 102. Write a function which takes lower-case hyphen-separated strings and
+ ;; converts them to camel-case strings.
+
+ (= (__ "something") "something")
+ (= (__ "multi-word-key") "multiWordKey")
+ (= (__ "leaveMeAlone") "leaveMeAlone")
+
+ (def solution-102
+   (fn [s]
+     (let [[w & ws] (clojure.string/split s #"-")]
+       (apply str w (map clojure.string/capitalize ws))))))
 
 (problem
  ;; 103. Given a sequence S consisting of n elements generate all
