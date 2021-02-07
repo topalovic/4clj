@@ -888,6 +888,28 @@
      (clojure.set/select #(= k (count %)) (reduce #(into % (for [ss %] (conj ss %2))) #{#{}} s)))))
 
 (problem
+ ;; 104. Given an integer smaller than 4000, return the corresponding roman
+ ;; numeral in uppercase, adhering to the subtractive principle.
+
+ (= "I"         (__ 1))
+ (= "XXX"       (__ 30))
+ (= "IV"        (__ 4))
+ (= "CXL"       (__ 140))
+ (= "DCCCXXVII" (__ 827))
+ (= "MMMCMXCIX" (__ 3999))
+ (= "XLVIII"    (__ 48))
+
+ (def solution-104
+   (fn [n]
+     (let [m [[1000 "M"] [900 "CM"] [500 "D"] [400 "CD"] [100 "C"] [90 "XC"]
+              [50 "L"] [40 "XL"] [10 "X"] [9 "IX"] [5 "V"] [4 "IV"] [1 "I"]]]
+       (loop [i n [[v s] & mm :as m] m c []]
+         (cond
+           (= 0 i) (apply str c)
+           (> v i) (recur i mm c)
+           :e (recur (- i v) m (conj c s))))))))
+
+(problem
  ;; 107. Given a positive integer n, return a function (f x) which computes
  ;; x^n. Observe that the effect of this is to preserve the value of n for use
  ;; outside the scope in which it is defined.
@@ -981,6 +1003,30 @@
        (= (apply + l) (apply + r))))))
 
 (problem
+ ;; 116. A balanced prime is a prime number which is also the mean of the
+ ;; primes directly before and after it in the sequence of valid primes. Create
+ ;; a function which takes an integer n, and returns true iff it is a balanced
+ ;; prime.
+
+ (= false (__ 4))
+ (= true (__ 563))
+ (= 1103 (nth (filter __ (range)) 15))
+
+ (def solution-116
+   (fn [n]
+     (letfn [(p? [i]
+               (and
+                (> i 1)
+                (not-any? #(= 0 (mod i %)) (range 2 i))))]
+       (and
+        (> n 2)
+        (p? n)
+        (let [[ps- ps+] (split-with #(>= n %) (filter p? (range)))
+              p- (last (butlast ps-))
+              p+ (first ps+)]
+          (= n (/ (+ p- p+) 2))))))))
+
+(problem
  ;; 118. Given a function f and an input sequence s, return a lazy sequence
  ;; of (f x) for each element x in s.
 
@@ -1058,6 +1104,28 @@
        {:suit (suits s) :rank (ranks r)}))))
 
 (problem
+ ;; 132. Write a function that takes a two-argument predicate, a value, and a
+ ;; collection; and returns a new collection where the value is inserted
+ ;; between every two items that satisfy the predicate.
+
+ (= '(1 :less 6 :less 7 4 3) (__ < :less [1 6 7 4 3]))
+ (= '(2) (__ > :more [2]))
+ (= [0 1 :x 2 :x 3 :x 4]  (__ #(and (pos? %) (< % %2)) :x (range 5)))
+ (empty? (__ > :more ()))
+ (= [0 1 :same 1 2 3 :same 5 8 13 :same 21]
+    (take 12 (->> [0 1]
+                  (iterate (fn [[a b]] [b (+ a b)]))
+                  (map first) ; fibonacci numbers
+                  (__ (fn [a b] ; both even or both odd
+                        (= (mod a 2) (mod b 2)))
+                      :same))))
+
+ (def solution-132
+   (fn [f v c]
+     (mapcat (fn [[x y]] (if (and x y (f x y)) [x v] [x]))
+             (partition-all 2 1 c)))))
+
+(problem
  ;; 135. Write a function that accepts a variable length mathematical expression
  ;; consisting of numbers and the operations +, -, *, and /. Assume a simple
  ;; calculator that does not do precedence and just calculates left to right.
@@ -1070,6 +1138,25 @@
  (def solution-135
    (fn [& e]
      (reduce #(if (fn? %) (% %2) (partial %2 %)) e))))
+
+(problem
+ ;; 137. Write a function which returns a sequence of digits of a non-negative
+ ;; number (first argument) in numerical system with an arbitrary base (second
+ ;; argument). Digits should be represented with their integer values, e.g. 15
+ ;; would be [1 5] in base 10, [1 1 1 1] in base 2 and [15] in base 16.
+
+ (= [1 2 3 4 5 0 1] (__ 1234501 10))
+ (= [0] (__ 0 11))
+ (= [1 0 0 1] (__ 9 2))
+ (= [1 0] (let [n (rand-int 100000)](__ n n)))
+ (= [16 18 5 24 15 1] (__ Integer/MAX_VALUE 42))
+
+ (def solution-137
+   (fn [n b]
+     (loop [n n c ()]
+       (if (= 0 n)
+         (if (empty? c) [0] c)
+         (recur (int (/ n b)) (conj c (mod n b))))))))
 
 (problem
  ;; 143. Create a function that computes the dot product of two sequences.
@@ -1189,6 +1276,33 @@
 
  (def solution-157
    #(map vector % (range))))
+
+(problem
+ ;; 158. Write a function that accepts a curried function of unknown arity n.
+ ;; Return an equivalent function of n arguments.
+
+ (= 10 ((__ (fn [a]
+              (fn [b]
+                (fn [c]
+                  (fn [d]
+                    (+ a b c d))))))
+        1 2 3 4))
+
+ (= 24 ((__ (fn [a]
+              (fn [b]
+                (fn [c]
+                  (fn [d]
+                    (* a b c d))))))
+        1 2 3 4))
+
+ (= 25 ((__ (fn [a]
+              (fn [b]
+                (* a b))))
+        5 5))
+
+ (def solution-158
+   (fn [f]
+     (fn [& c] (reduce #(% %2) f c)))))
 
 (problem
  ;; 166. Write a function that takes three arguments, a less than operator for
