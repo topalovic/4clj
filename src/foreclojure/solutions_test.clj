@@ -910,6 +910,25 @@
            :e (recur (- i v) m (conj c s))))))))
 
 (problem
+ ;; 105. Given an input sequence of keywords and numbers, create a map such
+ ;; that each key in the map is a keyword, and the value is a sequence of all
+ ;; the numbers (if any) between it and the next keyword in the sequence.
+
+ (= {} (__ []))
+ (= {:a [1]} (__ [:a 1]))
+ (= {:a [1], :b [2]} (__ [:a 1, :b 2]))
+ (= {:a [1 2 3], :b [], :c [4]} (__ [:a 1 2 3 :b :c 4]))
+
+ (def solution-105
+   (fn [c]
+     (loop [[x & xs] c r {} k nil]
+       (if x
+         (if (keyword? x)
+           (recur xs (assoc r x []) x)
+           (recur xs (merge-with into r {k [x]}) k))
+         r)))))
+
+(problem
  ;; 107. Given a positive integer n, return a function (f x) which computes
  ;; x^n. Observe that the effect of this is to preserve the value of n for use
  ;; outside the scope in which it is defined.
@@ -1320,3 +1339,55 @@
        (f x y) :lt
        (f y x) :gt
        :else :eq))))
+
+(problem
+ ;; 177. Write a function that takes in a string and returns truthy if all
+ ;; square [ ] round ( ) and curly { } brackets are properly paired and legally
+ ;; nested, or returns falsy otherwise.
+
+ (__ "This string has no brackets.")
+ (__ "class Test {
+        public static void main(String[] args) {
+          System.out.println(\"Hello world.\");
+        }
+      }")
+ (not (__ "(start, end]"))
+ (not (__ "())"))
+ (not (__ "[ { ] } "))
+ (__ "([]([(()){()}(()(()))(([[]]({}()))())]((((()()))))))")
+ (not (__ "([]([(()){()}(()(()))(([[]]({}([)))())]((((()()))))))"))
+ (not (__ "["))
+
+ (def solution-177
+   (fn [s]
+     (let [pairs [\( \) \{ \} \[ \]]
+           p (set pairs)
+           m (apply hash-map pairs)
+           f (fn [[h & t :as stack] c]
+               (cond
+                 (= (m h) c) t
+                 (p c) (conj stack c)
+                 :e stack))]
+       (empty? (reduce f () s))))))
+
+(problem
+ ;; 195. Generate all possible combinations of well-formed parentheses of
+ ;; length 2n (n pairs of parentheses).
+
+ (= [#{""} #{"()"} #{"()()" "(())"}] (map (fn [n] (__ n)) [0 1 2]))
+ (= #{"((()))" "()()()" "()(())" "(())()" "(()())"} (__ 3))
+ (= 16796 (count (__ 10)))
+ (= (nth (sort (filter #(.contains ^String % "(()()()())") (__ 9))) 6) "(((()()()())(())))")
+ (= (nth (sort (__ 12)) 5000) "(((((()()()()()))))(()))")
+
+ (def solution-195
+   (fn [n]
+     (letfn [(p [open close c]
+               (concat
+                (when (= 0 open close)
+                  (list (apply str c)))
+                (when (pos? open)
+                  (p (dec open) (inc close) (conj c "(")))
+                (when (pos? close)
+                  (p open (dec close) (conj c ")")))))]
+       (set (p n 0 []))))))
