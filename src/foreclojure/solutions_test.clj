@@ -1082,6 +1082,39 @@
        (count (filter #(< % (sum %)) c))))))
 
 (problem
+ ;; 121. Given a mathematical formula in prefix notation, return a function
+ ;; that calculates the value of the formula. The formula can contain nested
+ ;; calculations using the four basic mathematical operators, numeric
+ ;; constants, and symbols representing variables. The returned function has to
+ ;; accept a single parameter containing the map of variable names to their
+ ;; values.
+
+ (= 2 ((__ '(/ a b))
+       '{b 8 a 16}))
+ (= 8 ((__ '(+ a b 2))
+       '{a 2 b 4}))
+ (= [6 0 -4]
+    (map (__ '(* (+ 2 a)
+                 (- 10 b)))
+	 '[{a 1 b 8}
+	   {b 5 a -2}
+	   {a 2 b 11}]))
+ (= 1 ((__ '(/ (+ x 2)
+               (* 3 (+ y 1))))
+       '{x 4 y 1}))
+
+ (def solution-121
+   (fn [form]
+     (fn [binds]
+       (let [smap (merge {'+ + '- - '* * '/ /} binds)
+             formula (clojure.walk/prewalk-replace smap form)
+             evaluate (fn e [x]
+                        (if (seq? x)
+                          (apply (first x) (map e (rest x)))
+                          x))]
+         (evaluate formula))))))
+
+(problem
  ;; 122. Convert a binary number, provided in the form of a string, to its
  ;; numerical value.
 
@@ -1238,6 +1271,29 @@
      (iterate #(map +' `(0 ~@%) `(~@% 0)) r))))
 
 (problem
+ ;; 148. Write a function which calculates the sum of all natural numbers under
+ ;; n (first argument) which are evenly divisible by at least one of a and
+ ;; b (second and third argument). Numbers a and b are guaranteed to be
+ ;; coprimes.
+
+ (= 0 (__ 3 17 11))
+ (= 23 (__ 10 3 5))
+ (= 233168 (__ 1000 3 5))
+ (= "2333333316666668" (str (__ 100000000 3 5)))
+ (= "110389610389889610389610"
+    (str (__ (* 10000 10000 10000) 7 11)))
+ (= "1277732511922987429116"
+    (str (__ (* 10000 10000 10000) 757 809)))
+ (= "4530161696788274281"
+    (str (__ (* 10000 10000 1000) 1597 3571)))
+
+ (def solution-148
+   (fn [n a b]
+     (letfn [(q [x] (quot (dec n) x))
+             (cnt [x] (*' 1/2 x (q x) (inc (q x))))]
+       (+ (cnt a) (cnt b) (- (cnt (* a b))))))))
+
+(problem
  ;; 153. Given a set of sets, create a function which returns true if no two of
  ;; those sets have any elements in common and false otherwise.
 
@@ -1339,6 +1395,30 @@
        (f x y) :lt
        (f y x) :gt
        :else :eq))))
+
+(problem
+ ;; 171. Write a function that takes a sequence of integers and returns a
+ ;; sequence of "intervals". Each interval is a a vector of two integers, start
+ ;; and end, such that all integers between start and end (inclusive) are
+ ;; contained in the input sequence.
+
+ (= (__ [1 2 3]) [[1 3]])
+ (= (__ [10 9 8 1 2 3]) [[1 3] [8 10]])
+ (= (__ [1 1 1 1 1 1 1]) [[1 1]])
+ (= (__ []) [])
+ (= (__ [19 4 17 1 3 10 2 13 13 2 16 4 2 15 13 9 6 14 2 11])
+    [[1 4] [6 6] [9 11] [13 17] [19 19]])
+
+ (def solution-171
+   (fn [c]
+     (letfn [(f [a x]
+               (let [a (if (empty? a) [[x x]] a)
+                     [_ y] (last a)]
+                 (condp = x
+                   y a
+                   (inc y) (assoc-in a [(dec (count a)) 1] x)
+                   (conj a [x x]))))]
+       (reduce f [] (sort c))))))
 
 (problem
  ;; 177. Write a function that takes in a string and returns truthy if all
