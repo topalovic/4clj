@@ -1156,6 +1156,44 @@
        {:suit (suits s) :rank (ranks r)}))))
 
 (problem
+ ;; 131. Given a variable number of sets of integers, create a function which
+ ;; returns true iff all of the sets have a non-empty subset with an equivalent
+ ;; summation.
+
+ (= true  (__ #{-1 1 99}
+              #{-2 2 888}
+              #{-3 3 7777})) ; ex. all sets have a subset which sums to zero
+ (= false (__ #{1}
+              #{2}
+              #{3}
+              #{4}))
+ (= true  (__ #{1}))
+ (= false (__ #{1 -3 51 9}
+              #{0}
+              #{9 2 81 33}))
+ (= true  (__ #{1 3 5}
+              #{9 11 4}
+              #{-3 12 3}
+              #{-3 4 -2 10}))
+ (= false (__ #{-1 -2 -3 -4 -5 -6}
+              #{1 2 3 4 5 6 7 8 9}))
+ (= true  (__ #{1 3 5 7}
+              #{2 4 6 8}))
+ (= true  (__ #{-1 3 -5 7 -9 11 -13 15}
+              #{1 -3 5 -7 9 -11 13 -15}
+              #{1 -1 2 -2 4 -4 8 -8}))
+ (= true  (__ #{-10 9 -8 7 -6 5 -4 3 -2 1}
+              #{10 -9 8 -7 6 -5 4 -3 2 -1}))
+
+ (def solution-131
+   (fn [& s]
+     (let [powerset (fn [s] (reduce #(into % (for [ss %] (conj ss %2))) #{#{}} s))
+           powersets (map #(remove empty? %) (map powerset s))
+           sum (fn [s] (map #(apply + %) s))
+           sums (map set (map sum powersets))]
+       (not (empty? (apply clojure.set/intersection sums)))))))
+
+(problem
  ;; 132. Write a function that takes a two-argument predicate, a value, and a
  ;; collection; and returns a new collection where the value is inserted
  ;; between every two items that satisfy the predicate.
@@ -1292,6 +1330,46 @@
      (letfn [(q [x] (quot (dec n) x))
              (cnt [x] (*' 1/2 x (q x) (inc (q x))))]
        (+ (cnt a) (cnt b) (- (cnt (* a b))))))))
+
+(problem
+ ;; 151. Write a function which takes an integer n, as its only argument, and
+ ;; returns an increasing lazy sequence of all palindromic numbers that are not
+ ;; less than n.
+
+ (= (take 26 (__ 0))
+    [0 1 2 3 4 5 6 7 8 9
+     11 22 33 44 55 66 77 88 99
+     101 111 121 131 141 151 161])
+ (= (take 16 (__ 162))
+    [171 181 191 202
+     212 222 232 242
+     252 262 272 282
+     292 303 313 323])
+ (= (take 6 (__ 1234550000))
+    [1234554321 1234664321 1234774321
+     1234884321 1234994321 1235005321])
+ (= (first (__ (* 111111111 111111111)))
+    (* 111111111 111111111))
+ (= (set (take 199 (__ 0)))
+    (set (map #(first (__ %)) (range 0 10000))))
+ (= true
+    (apply < (take 6666 (__ 9999999))))
+ (= (nth (__ 0) 10101)
+    9102019)
+
+ (def solution-151
+   (fn [n]
+     (let [prefix (fn [n]
+                    (Long. (subs (str n) 0 (Math/ceil (/ (count (str n)) 2)))))
+           mirror (fn [prefix odd]
+                    (Long. (str prefix (subs (clojure.string/reverse (str prefix)) (if odd 1 0)))))
+           pal (fn [n]
+                 (let [odd (odd? (count (str n)))
+                       p (prefix n)
+                       x (mirror p odd)
+                       y (mirror (inc p) odd)]
+                   (if (>= x n) x y)))]
+       (iterate (comp pal inc) (pal n))))))
 
 (problem
  ;; 153. Given a set of sets, create a function which returns true if no two of
