@@ -979,6 +979,40 @@
      (rest (iterate #(mapcat (juxt count first) (partition-by identity %)) c)))))
 
 (problem
+ ;; 112. Create a function which takes an integer and a nested collection of
+ ;; integers as arguments. Analyze the elements of the input collection and
+ ;; return a sequence which maintains the nested structure, and which includes
+ ;; all elements starting from the head whose sum is less than or equal to the
+ ;; input integer.
+
+ (=  (__ 10 [1 2 [3 [4 5] 6] 7])
+     '(1 2 (3 (4))))
+ (=  (__ 30 [1 2 [3 [4 [5 [6 [7 8]] 9]] 10] 11])
+     '(1 2 (3 (4 (5 (6 (7)))))))
+ (=  (__ 9 (range))
+     '(0 1 2 3))
+ (=  (__ 1 [[[[[1]]]]])
+     '(((((1))))))
+ (=  (__ 0 [1 2 [3 [4 5] 6] 7])
+     '())
+ (=  (__ 0 [0 0 [0 [0]]])
+     '(0 0 (0 (0))))
+ (=  (__ 1 [-10 [1 [2 3 [4 5 [6 7 [8]]]]]])
+     '(-10 (1 (2 3 (4)))))
+
+ (def solution-112
+   (fn [n c]
+     (letfn [(f [n c]
+               (loop [a [] i 0 [h & t] c]
+                 (cond
+                   (> i n) [a i]
+                   (nil? h) [a i]
+                   (coll? h) (let [[aa ii] (f (- n i) h)] (recur (conj a aa) (+ i ii) t))
+                   (> (+ i h) n) (recur a (+ i h) t)
+                   :e (recur (conj a h) (+ i h) t))))]
+       ((f n c) 0)))))
+
+(problem
  ;; 114. Write a function which accepts an integer n, a predicate p, and a
  ;; sequence. It should return a lazy sequence of items in the list up to, but
  ;; not including, the nth item that satisfies the predicate.
@@ -1247,6 +1281,30 @@
        (if (= 0 n)
          (if (empty? c) [0] c)
          (recur (int (/ n b)) (conj c (mod n b))))))))
+
+(problem
+ ;; 141. Your goal is to devise a function that can determine which of a number
+ ;; of cards has won a trick. You should accept a trump suit, and return a
+ ;; function winner. Winner will be called on a sequence of cards, and should
+ ;; return the one which wins the trick. Cards with a larger rank are stronger.
+
+ (let [notrump (__ nil)]
+   (and (= {:suit :club :rank 9}  (notrump [{:suit :club :rank 4}
+                                            {:suit :club :rank 9}]))
+        (= {:suit :spade :rank 2} (notrump [{:suit :spade :rank 2}
+                                            {:suit :club :rank 10}]))))
+ (= {:suit :club :rank 10} ((__ :club) [{:suit :spade :rank 2}
+                                        {:suit :club :rank 10}]))
+ (= {:suit :heart :rank 8}
+    ((__ :heart) [{:suit :heart :rank 6} {:suit :heart :rank 8}
+                  {:suit :diamond :rank 10} {:suit :heart :rank 4}]))
+
+ (def solution-141
+   (fn [trump]
+     (fn [trick]
+       (let [s (or trump (:suit (trick 0)))
+             w (filter (comp #{s} :suit) trick)]
+         (apply max-key :rank w))))))
 
 (problem
  ;; 143. Create a function that computes the dot product of two sequences.
