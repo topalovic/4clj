@@ -630,6 +630,30 @@
    #(loop [f (apply % %&)] (if (fn? f) (recur (f)) f))))
 
 (problem
+ ;; 79. Write a function which calculates the sum of the minimal path through a
+ ;; triangle. The triangle is represented as a collection of vectors. The path
+ ;; should start at the top of the triangle and move to an adjacent number on
+ ;; the next row until the bottom of the triangle is reached.
+
+ (= 7 (__ '([1]
+           [2 4]
+          [5 1 4]
+         [2 3 4 5]))) ; 1->2->1->3
+
+ (= 20 (__ '([3]
+            [2 4]
+           [1 9 3]
+          [9 9 2 4]
+         [4 6 6 7 8]
+        [5 7 3 5 1 4]))) ; 3->4->3->2->7->1
+
+ (def solution-79
+   (fn [t]
+     (letfn [(m [a] (map #(apply min %) (partition 2 1 a)))
+             (s [a x] (map + x (m a)))]
+       (first (reduce s (reverse t)))))))
+
+(problem
  ;; 80. A number is "perfect" if the sum of its divisors equal the number itself.
  ;; Write a function which returns true for perfect numbers and false otherwise.
 
@@ -1011,6 +1035,27 @@
                    (> (+ i h) n) (recur a (+ i h) t)
                    :e (recur (conj a h) (+ i h) t))))]
        ((f n c) 0)))))
+
+(problem
+ ;; 113. Write a function that takes a variable number of integer arguments. If
+ ;; the output is coerced into a string, it should return a comma (and space)
+ ;; separated list of the inputs sorted smallest to largest. If the output is
+ ;; coerced into a sequence, it should return a seq of unique input elements in
+ ;; the same order as they were entered.
+
+ (= "1, 2, 3" (str (__ 2 1 3)))
+ (= '(2 1 3) (seq (__ 2 1 3)))
+ (= '(2 1 3) (seq (__ 2 1 3 3 1 2)))
+ (= '(1) (seq (apply __ (repeat 5 1))))
+ (= "1, 1, 1, 1, 1" (str (apply __ (repeat 5 1))))
+ (and (= nil (seq (__)))
+      (=  "" (str (__))))
+
+ (def solution-113
+   (fn [& c]
+     (reify clojure.lang.Seqable
+       (seq [_] (seq (distinct c)))
+       (toString [_] (apply str (interpose ", " (sort c))))))))
 
 (problem
  ;; 114. Write a function which accepts an integer n, a predicate p, and a
