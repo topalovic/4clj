@@ -1,6 +1,6 @@
 # 4Clojure solutions
 
-Runnable solutions to [4Clojure problems](https://www.4clojure.com/problems).
+Runnable solutions to [4Clojure](https://github.com/4clojure/4clojure) problems.
 
 Note that this is a work in progress. Also, I'm too lazy to repack the "elementary" solutions.
 
